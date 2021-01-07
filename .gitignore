@@ -2,3 +2,6 @@ Completed-Computers.txt
 Output.txt
 Unavailable-Computers.txt
 testing.ps1
+test.csv
+CAT_ServerList.csv
+logs/*.log
