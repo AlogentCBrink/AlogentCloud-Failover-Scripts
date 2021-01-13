@@ -13,6 +13,7 @@
 #	Chris Brinkley
 #
 # Version:
+#   1.0.1   - 01/13/2021 -  Added create Log Folder if it does not exist.
 #	1.0.0 	- 12/09/2020 -	Initial Build.
 #
 ################################################################################
@@ -25,7 +26,15 @@ $DaysToKeep = 10
 $instLoc = split-path -parent $MyInvocation.MyCommand.Definition
 
 $logingDate = Get-Date -Format "MMddyyyy"
-$Logpath = $instLoc + "\logs\deletedlog_" + $logingDate + ".log"
+$LogPath = $instLoc + "\logs"
+
+If(!(test-path $LogPath)) {
+# If the Log Folder does not exist create it.
+    New-Item -ItemType Directory -Force -Path $LogPath
+    Write-Host "Log Folder created."
+}
+
+$LogPath += "\deletedlog_" + $logingDate + ".log"
 
 $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if ($currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { 
@@ -56,7 +65,7 @@ Get-ChildItem $WatchFolder -Recurse -Force -ea 0 |
     Where-Object {!$_.PsIsContainer -and $_.LastWriteTime -lt (Get-Date).AddDays(-1 * $DaysToKeep)} |
     ForEach-Object {
         $_ | Remove-Item -Force
-        $_.FullName | Out-File $Logpath -Append
+        $_.FullName | Out-File $LogPath -Append
     }
 
 # Delete empty folders and subfolders
@@ -65,5 +74,5 @@ Get-ChildItem $WatchFolder -Recurse -Force -ea 0 |
     Where-Object {$_.getfiles().count -eq 0} |
     ForEach-Object {
         $_ | Remove-Item  -Force
-        $_.FullName | Out-File $Logpath -Append
+        $_.FullName | Out-File $LogPath -Append
     }
